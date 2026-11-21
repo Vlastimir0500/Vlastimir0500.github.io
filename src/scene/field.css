@@ -1,0 +1,36 @@
+.field-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  isolation: isolate;
+}
+
+.field-poster,
+.field-webgl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.field-poster {
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.field-webgl {
+  opacity: 0;
+}
+
+.field-scene.has-canvas .field-poster {
+  visibility: hidden;
+}
+
+.field-scene.has-canvas .field-webgl {
+  opacity: 1;
+}
+
+.field-webgl canvas {
+  display: block;
+}
