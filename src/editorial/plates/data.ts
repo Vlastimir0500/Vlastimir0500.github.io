@@ -1,7 +1,8 @@
 import * as THREE from 'three'
+import { neutralTour, tourValue, type TourMix } from './plateTypes'
 
 type DataKind = 'paths' | 'events' | 'shift'
-type Plate = { object: THREE.Group; update: (time: number, progress: number) => void }
+type Plate = { object: THREE.Group; update: (time: number, progress: number, tour?:TourMix) => void }
 type Random = () => number
 
 const teal = new THREE.Color('#6fc7c2')
@@ -124,12 +125,14 @@ function pathsPlate(): Plate {
   }
   object.add(samples, ends)
   const position = new THREE.Vector3()
-  function update(time: number, progress: number) {
-    const sample = ((.39 + time*.085 + progress*.52) % 1) * (steps-1)
+  function update(time: number, progress: number, tour:TourMix=neutralTour) {
+    const movingTime = (.39 + time*.085 + progress*.52) % 1
+    const sample = tourValue(tour,movingTime,.07 + .04*Math.sin(time*.6),.55 + .11*Math.sin(time*.55),.995) * (steps-1)
     const index = Math.floor(sample)
     for(let i = 0; i < count; i++) {
       position.lerpVectors(paths[i][index], paths[i][index+1], sample-index)
-      place(samples, i, position, i % 9 === 0 ? .031 : .021)
+      const emphasis = tourValue(tour,1,1.48,1.8,1.7)
+      place(samples, i, position, (i % 9 === 0 ? .031 : .021) * emphasis)
     }
     samples.instanceMatrix.needsUpdate = true
   }
@@ -164,6 +167,10 @@ function eventsPlate(): Plate {
   grid(object)
   const random = seeded(0x7253ac)
   const lines = new Strokes()
+  const arrivalsGroup = new THREE.Group()
+  const arrivalStrokes = new Strokes()
+  const curtains: THREE.MeshBasicMaterial[] = []
+  object.add(arrivalsGroup)
   const pulse = markers(2, pale, true)
   const lanes = [
     { z: -.62, color: teal, arrivals: clusteredArrivals([.08,.27,.47,.54,.82],random) },
@@ -200,9 +207,11 @@ function eventsPlate(): Plate {
     curtain.setAttribute('position',new THREE.Float32BufferAttribute(verts,3))
     curtain.setAttribute('color',new THREE.Float32BufferAttribute(colors,3))
     curtain.setIndex(indices)
-    object.add(new THREE.Mesh(curtain, new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshBasicMaterial({
       vertexColors: true, transparent: true, opacity: .44, side: THREE.DoubleSide, depthWrite: false,
-    })))
+    })
+    curtains.push(material)
+    object.add(new THREE.Mesh(curtain, material))
     lines.polyline(points,lane.color)
     roof.push(points)
     const tips = markers(lane.arrivals.length,lane.color)
@@ -210,22 +219,31 @@ function eventsPlate(): Plate {
       const x = THREE.MathUtils.lerp(near,far,event.t)
       const z = lane.z + (index === 0 ? -.17 : .17)
       const tip = point(x,minY + .28 + event.weight*.32,z)
-      lines.edge(point(x,minY,z),tip,lane.color)
+      arrivalStrokes.edge(point(x,minY,z),tip,lane.color)
       place(tips,i,tip,.017)
     })
-    object.add(tips)
+    arrivalsGroup.add(tips)
     pulse.setColorAt(index,mix(lane.color,pale,.65))
   })
   lines.addTo(object, .92)
+  arrivalStrokes.addTo(arrivalsGroup,.95)
   object.add(pulse)
   const position = new THREE.Vector3()
-  function update(time: number, progress: number) {
-    const t = (.28 + progress*.52 + time*.075) % 1
+  const lateBurst = roof[0].reduce((peak,p,i,points) => {
+    const t = i / (points.length - 1)
+    return t >= .47 && t < .62 && p.y > points[peak].y ? i : peak
+  }, Math.ceil(.47*(roof[0].length-1))) / (roof[0].length-1)
+  function update(time: number, progress: number, tour:TourMix=neutralTour) {
+    const t = tourValue(tour,(.28 + progress*.52 + time*.075) % 1,.28,lateBurst,lateBurst + .14 + .024*Math.sin(time*.7))
+    const height = 1 + .50 * tour[0]
+    arrivalsGroup.scale.y = height
+    arrivalsGroup.position.y = (floor + .09) * (1 - height)
+    curtains.forEach(material=>{material.opacity = tourValue(tour,.44,.16,.64,.52)})
     roof.forEach((curve,i) => {
       const fraction = t*(curve.length-1)
       const j = Math.floor(fraction)
       position.lerpVectors(curve[j],curve[j+1],fraction-j)
-      place(pulse,i,position,.045)
+      place(pulse,i,position,tourValue(tour,.045,.055,.088,.076))
     })
     pulse.instanceMatrix.needsUpdate = true
   }
@@ -296,11 +314,11 @@ function shiftPlate(): Plate {
   streams.addTo(object,.34)
   object.add(particles)
   const position = new THREE.Vector3()
-  function update(time: number, progress: number) {
+  function update(time: number, progress: number, tour:TourMix=neutralTour) {
     curves.forEach((curve,i) => {
-      const t = (.17 + i*.618 + time*.095 + progress*.54) % 1
+      const t = tourValue(tour,(.17 + i*.618 + time*.095 + progress*.54) % 1,.06+i*.011,.51+.22*Math.sin(time*.76+i*.25),.87+i*.011)
       curve.getPoint(t,position)
-      const radius = .015 + .018*Math.sin(t*Math.PI)
+      const radius = .015 + .018*Math.sin(t*Math.PI) + .025*tour[1]
       place(particles,i,position,radius)
     })
     particles.instanceMatrix.needsUpdate = true

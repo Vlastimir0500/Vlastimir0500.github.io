@@ -1,0 +1,16 @@
+.tour-speaker:has(.tour-voice) { flex-wrap:wrap; row-gap:4px }
+.tour-voice {
+  display:inline-flex; align-items:center; justify-content:center; gap:5px; min-height:36px;
+  padding:4px 8px; border:1px solid #aa9476; border-radius:4px; color:#533d2c;
+  background:transparent; font:550 .76rem/1.15 var(--sans); white-space:nowrap;
+}
+.tour-voice:hover,.tour-voice[aria-pressed="true"] { background:#e5d6bb }
+.tour-speaker .tour-voice-error { flex-basis:100%; font:400 .77rem/1.4 var(--sans); color:#743b21 }
+body:has(.tour-voice[data-narrating]) .voyage-figure[data-tour="true"] .sailor-grin { display:inline }
+body:has(.tour-voice[data-narrating]) .voyage-figure[data-tour="true"] :is(.sailor-smile,.sailor-thinking) { display:none }
+@media (prefers-reduced-motion:no-preference) {
+  body:has(.tour-voice[data-narrating]) .voyage-figure[data-tour="true"] .sailor-grin {
+    transform-box:fill-box; transform-origin:50% 10%; animation:sailor-speech .19s ease-in-out infinite alternate;
+  }
+}
+@media (pointer:coarse) { .tour-voice { min-height:44px } }

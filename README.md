@@ -7,7 +7,7 @@ Vlastimir’s portfolio features MORPH, Monte Carlo AD Greeks, Q-CyberSelect, Pr
 Use Node.js 22 and npm.
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
@@ -17,6 +17,14 @@ For the static production build and its local preview, run these commands in the
 npm run build
 npm run preview
 ```
+
+## Future work
+
+With the dev server running on its default port, open any of these exhibits directly. The portfolio terminal’s `research` command also lists all three.
+
+- Explore six proposed career milestones in computational neuroscience, automation and spatial intelligence. Each node names a target role, a deliverable and a way to test it. Marking a step advances the route preview and saves it in your browser. [Career map](http://localhost:5173/#future-work)
+- Run a seeded simulation in a browser worker. It generates eight training voyages, decodes 256 positions on four held-out voyages and compares median position error against a navigator that remembers its last fix. Download the seed, protocol and trajectories as JSON to replay the run. [Navigation replay](http://localhost:5173/#navigation-replay)
+- Switch between place fields, route topology and a five-fix survey on an original island chart. Each layer pairs a proposed experiment with an evaluation measure and a primary research reference. [An atlas from memory](http://localhost:5173/#research-atlas)
 
 ## GitHub Pages
 
@@ -28,10 +36,12 @@ The included workflow builds the project on pushes to `main` and can also run ma
 
 - `src/App.tsx` implements navigation, the native mobile menu, figure controls and scroll timelines.
 - `src/scene/` contains the parametric half-twist, custom metal shader, etched angle markings, and React Three Fiber renderer. The renderer pauses outside the viewport and while the page is hidden.
-- `src/editorial/` contains two featured projects, four selectable project studies, technical references, and GitHub contact. Each project figure is a locally generated Three.js scene. MORPH's package separates into layers, and the data and security studies animate paths, signals, or particles through a spatial model. Drag or use the arrow keys to rotate a figure. Its pause button freezes the animation.
+- `src/exhibits/` contains the silicon, mathematics, and intelligence chapters. Tap a model, select a project, or choose **Ask Luffy** to start a three-part conversation. Select **Read aloud** to hear the current reply and the following replies in an original synthetic voice. Select **Mute** to return to text. Each reply changes the model’s viewpoint or geometry. Drag or use the arrow keys to rotate a live figure. Its pause button freezes automatic motion.
+- `src/companion/` contains the original articulated straw-hat figure and its scroll and dialogue animations. The hat control hides or shows the guide and remembers that choice on this browser. Edit `PirateFigure.tsx` to change the artwork while keeping the named joints.
+- `src/exhibits/tourScript.ts` holds the dialogue for all six projects. `src/editorial/plates/` builds the corresponding Three.js models. Models and their matching stills are original visual interpretations of the projects.
+- `src/desk/` contains the keyboard-operated portfolio terminal and the expandable experiment wall. `src/story/` contains the personal introduction, procedural surface study, and closing scene.
+- `src/editorial/career/` contains the career map, milestone dependencies and the navigation experiment. `src/editorial/FutureWork.tsx` holds the three atlas proposals.
 - `src/styles.css` defines typography, the page frame, responsive layouts and motion preferences.
-
-At `#future-work`, an original interactive archipelago illustrates three proposed studies in spatial navigation. Switch between place fields, a route graph, and a five-fix survey. Each proposal includes an experiment, an evaluation measure, and a primary research reference.
 
 Reduced motion removes the pinned sequence and uses locally rendered stills for the hero and project figures. The posters in `public/field/` and `public/plates/` also support devices without WebGL. Live project figures render while visible.
 

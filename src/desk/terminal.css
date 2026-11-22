@@ -1,0 +1,64 @@
+.terminal-trigger,.terminal-close,.terminal-enter {
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.terminal-trigger {
+  width: 38px; height: 38px; padding: 0; border: 1px solid #8f9da251;
+  border-radius: 50%; flex: none; color: inherit;
+}
+.terminal-trigger:hover { background: #8fa7a21c }
+html:has(.folio-terminal[open]) { overflow: hidden }
+.folio-terminal {
+  width: min(610px,calc(100% - 32px)); max-width: none; max-height: min(720px,calc(100dvh - 32px));
+  padding: 0; color: #e7e1d6; border: 1px solid #78909574; border-radius: 5px;
+  background: #11171b; box-shadow: 0 32px 100px #0009; font-family: var(--sans); color-scheme: dark;
+}
+.folio-terminal[open] { display: flex; flex-direction: column }
+.folio-terminal::backdrop { background: #070a0bd4; backdrop-filter: blur(6px) }
+.terminal-heading,.terminal-form,.terminal-hints {
+  padding-inline: clamp(16px,4vw,30px); flex-shrink: 0;
+}
+.terminal-heading { display: flex; align-items: center; gap: 12px; min-height: 64px; border-bottom: 1px solid #a8bec132 }
+.terminal-heading > svg { color: #9acfc7 }
+.terminal-heading h2 { font: 550 1.2rem/1.15 var(--sans); letter-spacing: -.035em; margin: 0 }
+.terminal-close { width: 42px; height: 42px; margin-left: auto; padding: 0; color: #b9c5c8 }
+.terminal-close:hover { color: white }
+.terminal-body {
+  height: clamp(145px,39dvh,360px); min-height: 40px; padding: clamp(20px,4vw,30px); overflow-y: auto;
+  overscroll-behavior: contain; overflow-wrap: anywhere; scrollbar-color: #435156 #101518;
+  background: linear-gradient(145deg,#131c21,#101619 68%);
+}
+.terminal-body:focus-visible { outline: 1px solid #80aaa9; outline-offset: -2px }
+.terminal-welcome p { margin: 0 0 10px; font: italic 400 2.4rem/1.05 var(--serif); color: #e0dacd }
+.terminal-welcome > span,.terminal-reply { color: #c6d0d0; line-height: 1.6; font-size: .98rem }
+.terminal-entry + .terminal-entry { border-top: 1px solid #a9bec322; padding-top: 15px; margin-top: 17px }
+.terminal-entry p { margin: 0 }
+.terminal-echo { font: 500 .85rem/1.5 var(--mono); color: #a5dad1 }
+.terminal-echo span { padding-right: .8em; color: #d69e77 }
+.terminal-reply { padding-top: 7px }
+.terminal-commands { margin: 0; display: grid; gap: 2px }
+.terminal-commands > div { display: grid; align-items: baseline; grid-template-columns: 8ch 1fr; gap: 16px }
+.terminal-commands dt,.terminal-commands dd { margin: 0 }
+.terminal-commands button,.terminal-inline-command {
+  color: #abd8ce; padding: 0; text-decoration: underline; text-underline-offset: .23em;
+  font: 400 .86rem/1.7 var(--mono);
+}
+.terminal-links { list-style: none; display: flex; flex-wrap: wrap; gap: 3px 16px; padding: 0; margin: 6px 0 0 }
+.terminal-links a { color: #b1d6d0; font: 500 .87rem/1.7 var(--sans); text-decoration: underline; text-underline-offset: .24em }
+.terminal-links a:hover,.terminal-inline-command:hover,.terminal-commands button:hover { color: #fff }
+.terminal-form { display: flex; align-items: center; gap: 12px; border-top: 1px solid #a8bec132; min-height: 58px }
+.terminal-form label { color: #cea17e; font: 400 .8rem/1.4 var(--mono); white-space: nowrap }
+.terminal-form input {
+  min-width: 0; flex: 1; padding: 9px 4px; background: transparent; border: none; outline: none;
+  color: #edf1ec; caret-color: #91d2c7; font: 400 1rem/1.35 var(--mono);
+}
+.terminal-form input:focus-visible { box-shadow: inset 0 -1px #90bfb6 }
+.terminal-form input::placeholder { color: #839195; opacity: 1 }
+.terminal-enter { min-height: 40px; min-width: 42px; font: 500 .88rem/1.4 var(--sans); color: #b2d6d1 }
+.terminal-hints { display: flex; justify-content: space-between; margin: 0; padding-block: 0 13px; font: 400 .74rem/1.4 var(--mono); color: #95a6a9 }
+.terminal-hints kbd { font: inherit; color: #c1c9c7 }
+.terminal-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+@media (max-width: 700px) { .terminal-trigger { width: 44px; height: 44px }.terminal-hints { display: none } }
+@media (prefers-reduced-motion: no-preference) {
+  .folio-terminal[open] { animation: open-folio-terminal .18s ease-out }
+  @keyframes open-folio-terminal { from { opacity: .4; transform: translateY(5px) } to { opacity: 1; transform: none } }
+}

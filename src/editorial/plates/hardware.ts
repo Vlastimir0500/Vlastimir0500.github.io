@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { neutralTour, tourValue, type TourMix } from './plateTypes'
 
 // All masks are drawn in package coordinates. The artwork is a procedural
 // study of a die and carrier rather than a photomicrograph of fabricated silicon.
@@ -170,7 +171,7 @@ function topFace(w: number, d: number, map: THREE.Texture, metallic: number, rou
 }
 
 /** Exposed die, interposer, package carrier and perimeter contacts. */
-export function createHardware(): { object: THREE.Group; update: (time: number, progress: number) => void } {
+export function createHardware(): { object: THREE.Group; update: (time: number, progress: number, tour?:TourMix) => void } {
   const object = new THREE.Group()
   const copper = new THREE.MeshStandardMaterial({color: '#bc8765', metalness: .72, roughness: .33})
   const ceramic = new THREE.MeshStandardMaterial({color: '#394248', metalness: .38, roughness: .34})
@@ -309,13 +310,16 @@ export function createHardware(): { object: THREE.Group; update: (time: number, 
 
   return {
     object,
-    update(time, progress) {
+    update(time, progress, tour=neutralTour) {
       const lift = THREE.MathUtils.smoothstep(THREE.MathUtils.clamp(progress, 0, 1), .1, .94)
       const phase = .5 - .5 * Math.cos(time * .62 + 1.15)
       const carrierLift = THREE.MathUtils.smoothstep(phase, 0, .85)
       const dieLift = THREE.MathUtils.smoothstep(phase, .14, 1)
-      packageGroup.position.y = .04 + .17 * lift + .27 * carrierLift
-      dieAssembly.position.y = .02 + .16 * lift + .51 * dieLift
+      packageGroup.position.y = tourValue(tour,.04 + .17 * lift + .27 * carrierLift,.56,.27,.32)
+      dieAssembly.position.y = tourValue(tour,.02 + .16 * lift + .51 * dieLift,.79,.49,.77)
+      dieAssembly.position.x = -.76 * tour[2]
+      dieAssembly.position.z = -.25 * tour[2]
+      gold.emissive.setRGB(.25*tour[1],.13*tour[1],.04*tour[1])
       object.rotation.y = -.13 + .10 * lift + .06 * Math.sin(time * .26)
     },
   }

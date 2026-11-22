@@ -1,0 +1,79 @@
+.experiment-wall { background: #e7e1d6; color: #182024 }
+.notebook-heading {
+  display: grid; grid-template-columns: minmax(0,1.45fr) minmax(0,.65fr); align-items: end;
+  column-gap: clamp(30px,5.6vw,85px); margin-block: 22px clamp(27px,3.5vw,54px);
+}
+.notebook-heading h2 {
+  max-width: 17ch; margin: 0; color: #171f22; font: 560 clamp(3rem,5.8vw,6.4rem)/.99 var(--sans);
+  letter-spacing: -.065em; text-wrap: balance;
+}
+.notebook-heading em { font: italic 400 1.07em/.96 var(--serif); letter-spacing: -.036em; color: #6e533c }
+.notebook-heading p,.notebook-question,.notebook-detail p {
+  color: #495559; font: 400 1rem/1.55 var(--sans); text-wrap: pretty;
+}
+.notebook-heading p { max-width: 33ch; margin: 0 }
+.notebook-wall {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); align-items: start;
+  padding-top: clamp(17px,2vw,27px); border-top: 1px solid #62706e68;
+  gap: clamp(20px,2.7vw,42px);
+}
+.notebook-sheet { min-width: 0 }
+.notebook-sheet figure { margin: 0 }
+.notebook-figure {
+  display: block; width: 100%; height: auto;
+  background: linear-gradient(128deg,#f0ebdf,#dedfd2);
+  border: 1px solid #69827b61;
+}
+.experiment-wall .notebook-sheet figcaption {
+  margin: 6px 0 0; font: 400 .72rem/1.55 var(--mono); color: #53605b; overflow-wrap: anywhere;
+}
+.notebook-copy { margin-top: clamp(19px,2.2vw,34px) }
+.notebook-state { display: flex; align-items: center; gap: 7px; margin: 0; font: 400 .73rem/1.5 var(--mono); color: #46554f }
+.notebook-state::before { content: ''; width: 7px; height: 7px; border: 1.2px solid #4b7069 }
+.notebook-tail::before { background: #4b7069 }
+.notebook-edge::before { background: linear-gradient(90deg,#4b7069 50%,transparent 50%) }
+.notebook-loop::before { border-style: dashed }
+.notebook-copy h3 {
+  margin: .32em 0 .28em; font: 550 clamp(1.6rem,2.45vw,2.85rem)/1.06 var(--sans);
+  letter-spacing: -.052em; color: #182024;
+}
+.notebook-question { margin: 0; max-width: 37ch }
+.notebook-toggle,.notebook-passage {
+  display: inline-flex; align-items: center; gap: 8px; padding: 0;
+  min-height: 44px; color: #263b39; font: 550 .89rem/1.3 var(--sans);
+  text-decoration: underline; text-underline-offset: .3em;
+}
+.notebook-toggle { margin-top: 6px }
+.notebook-toggle svg { color: #925d3c }
+.notebook-toggle:hover,.notebook-source:hover { text-underline-offset: .48em }
+.notebook-detail { border-top: 1px solid #70807861; padding: 14px 0 6px }
+.notebook-detail[hidden] { display: none }
+.notebook-detail p { margin: 0 0 12px }
+.notebook-detail label,.notebook-readout {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 4px;
+  font: 400 .76rem/1.55 var(--mono);
+}
+.notebook-detail label { color: #354a45 }
+.notebook-detail input[type="range"] { display: block; width: 100%; margin: 0; height: 34px; accent-color: #436c65; cursor: pointer }
+.notebook-detail .notebook-readout { display: block; color: #4c5c55; font: 400 .77rem/1.5 var(--mono) }
+.notebook-readout strong { font-weight: 500; color: #67492f }
+.notebook-passage { justify-content: space-between; width: 100%; text-decoration: none; border-block: 1px solid #6a7a744d; margin-block: 4px 8px }
+.notebook-passage span { font: 400 .8rem/1.4 var(--mono); color: #785439; text-decoration: underline; text-underline-offset: .25em }
+.notebook-source { display: inline-flex; align-items: center; min-height: 44px; font: 500 .88rem/1.5 var(--sans); color: #2b4842; text-decoration: underline; text-underline-offset: .3em }
+@media (max-width: 900px) {
+  .notebook-heading { grid-template-columns: 1.25fr .75fr }
+  .notebook-wall { gap: 16px }
+}
+@media (max-width: 730px) {
+  .notebook-heading { grid-template-columns: 1fr; row-gap: 15px }
+  .notebook-heading h2 { font-size: clamp(2.9rem,10.7vw,4.8rem) }
+  .notebook-heading p { max-width: 42ch }
+  .notebook-wall { grid-template-columns: 1fr; gap: 23px }
+  .notebook-sheet { border-bottom: 1px solid #70807861; padding-bottom: 15px }
+  .notebook-copy { margin-top: 16px }
+  .notebook-copy h3 { font-size: clamp(2rem,7.6vw,2.8rem) }
+}
+@media (min-width: 490px) and (max-width: 730px) {
+  .notebook-sheet { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.13fr); gap: 19px }
+  .notebook-copy { margin-top: 0 }
+}

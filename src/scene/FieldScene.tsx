@@ -23,7 +23,8 @@ type FieldProps = {
 
 export default function FieldScene({ progress, paused, reducedMotion, variant, onLiveChange }: FieldProps) {
   const host = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(true)
+  const [visible, setVisible] = useState(false)
+  const [seen, setSeen] = useState(false)
   const [foreground, setForeground] = useState(!document.hidden)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -40,7 +41,10 @@ export default function FieldScene({ progress, paused, reducedMotion, variant, o
   useEffect(() => {
     const root = host.current
     if (!root) return
-    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting))
+    const observer = new IntersectionObserver(([entry]) => {
+      setVisible(entry.isIntersecting)
+      if (entry.isIntersecting) setSeen(true)
+    })
     observer.observe(root)
     const change = () => setForeground(!document.hidden)
     document.addEventListener('visibilitychange', change)
@@ -61,7 +65,7 @@ export default function FieldScene({ progress, paused, reducedMotion, variant, o
         decoding="async"
         draggable={false}
       />
-      {live && (
+      {live && seen && (
         <div className="field-webgl">
           <RenderBoundary onFailure={onLoss}>
             <Suspense fallback={null}>

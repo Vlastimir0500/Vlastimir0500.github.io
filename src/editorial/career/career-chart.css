@@ -1,0 +1,178 @@
+.career-chart {
+  --circuit-blue: #102026;
+  --circuit-teal: #91d2ce;
+  --circuit-copper: #dca77c;
+  container: career-schematic / inline-size;
+  min-width: 0;
+  width: 100%;
+}
+.career-chart-description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.career-chart-shell {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 40% 50%, #20373d88, transparent 72%), #0c181e;
+  color: #e2e9e4;
+  border: 1px solid #77979970;
+}
+.career-board {
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 760 / 354;
+  min-width: 0;
+  background-image: radial-gradient(#a1b4ad2b .7px, transparent .9px),
+    linear-gradient(90deg, #7998940e 1px, transparent 1px),
+    linear-gradient(#7998940e 1px, transparent 1px);
+  background-size: 11px 11px, 44px 44px, 44px 44px;
+  background-position: center;
+}
+.career-board::before, .career-board::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+}
+.career-board::before {
+  inset: 8px;
+  border: 1px solid #93a69d30;
+  background:
+    linear-gradient(to right,#a6b8ac 7px,transparent 7px) top left / 9px 1px no-repeat,
+    linear-gradient(to bottom,#a6b8ac 7px,transparent 7px) top left / 1px 9px no-repeat,
+    linear-gradient(to left,#a6b8ac 7px,transparent 7px) bottom right / 9px 1px no-repeat,
+    linear-gradient(to top,#a6b8ac 7px,transparent 7px) bottom right / 1px 9px no-repeat;
+}
+.career-board::after {
+  inset: 12px 15px auto;
+  height: 3px;
+  border-inline: 1px solid #93a69d66;
+  background: repeating-linear-gradient(to right,transparent 0 21px,#93a69d3b 21px 22px);
+}
+.career-wires { display:block; position:absolute; inset:0; width:100%; height:100%; pointer-events:none }
+.career-wires-narrow { display:none }
+.career-chart .is-research { --trace-color:var(--circuit-teal) }
+.career-chart .is-automation { --trace-color:var(--circuit-copper) }
+.career-chart .is-combined { --trace-color:#c5d2bb }
+.career-conduit { stroke:#061216; stroke-width:5 }
+.career-trace-ink { stroke:var(--trace-color); stroke-width:1.55; opacity:.58 }
+.career-trace.is-earned .career-trace-ink { opacity:.95; stroke-width:2.3 }
+.career-trace.is-traced .career-trace-ink { opacity:.98 }
+.career-trace-flash { stroke:var(--trace-color); stroke-width:2.5; opacity:0; stroke-dasharray:.15 .86 }
+.career-direction { stroke:#becbc4; stroke-width:1.3; opacity:.87 }
+.career-port { stroke:#7a9599; stroke-width:1.2; stroke-dasharray:2.5 3 }
+.career-via { stroke:#96afad; fill:#102026; stroke-width:1.3 }
+.career-rail-label {
+  position:absolute;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  left:5.5%;
+  font:400 clamp(.67rem,1.6cqw,.78rem)/1.1 var(--mono);
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  pointer-events:none;
+}
+.career-rail-label::before { content:''; width:13px; height:2px; background:currentColor }
+.research-rail { top:8.4%; color:var(--circuit-teal) }
+.automation-rail { top:54%; color:var(--circuit-copper) }
+.career-chart .career-station {
+  --socket-size: clamp(34px,6.5cqw,56px);
+  position:absolute;
+  left:var(--cx);
+  top:var(--cy);
+  transform:translate(-50%, calc(var(--socket-size) * -.5));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:max-content;
+  max-width:20%;
+  min-height:44px;
+  border:0;
+  background:none;
+  padding:0 3px 2px;
+  text-align:center;
+  cursor:pointer;
+  color:#e6e9df;
+  border-radius:3px;
+}
+.career-socket {
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:var(--socket-size);
+  height:var(--socket-size);
+  flex-shrink:0;
+  margin-bottom:7px;
+  border:1px solid #839c9b;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at center, transparent 58%, #88a5a027 60%, transparent 62%),
+    radial-gradient(ellipse at 36% 17%,#2f454a,#15252c 78%);
+  color:#b7cfcb;
+  box-shadow:0 0 0 3px #0d1b21, 0 0 0 4px #91aaa732, 0 3px 8px #060e1466;
+}
+.career-socket svg { width:62%; height:62% }
+.career-station[data-state='ready'] .career-socket,
+.career-station[data-state='done'] .career-socket {
+  border-color:var(--trace-color);
+  color:var(--trace-color);
+}
+.career-station[aria-pressed='true'] .career-socket {
+  color:#f1eddf;
+  background:radial-gradient(ellipse at 34% 18%,#425758,#233137 78%);
+  box-shadow:0 0 0 3px #0e1e23, 0 0 0 4px var(--trace-color), 0 3px 8px #060e1477;
+}
+.career-chart .career-station strong {
+  font:550 clamp(.82rem,2.5cqw,1.13rem)/1.16 var(--sans);
+  letter-spacing:-.025em;
+}
+.career-chart .career-station small {
+  margin-top:4px;
+  color:#aebfbd;
+  font:400 clamp(.63rem,1.45cqw,.72rem)/1.2 var(--mono);
+}
+.career-station[data-state='ready'] small,.career-station[data-state='done'] small { color:var(--trace-color) }
+.career-check {
+  position:absolute;
+  bottom:-1px;
+  right:-5px;
+  display:grid;
+  place-items:center;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#a4cfbb;
+  color:#142a24;
+  font:700 12px/1 var(--sans);
+}
+.career-chart .career-station:focus-visible { outline:2px solid #f5e5b8; outline-offset:4px }
+@media(hover:hover) { .career-station:hover .career-socket { border-color:#e3ebe4; color:#f5f3e9 } }
+@media(prefers-reduced-motion:no-preference) {
+  .career-trace-flash { animation: career-route-trace .82s ease-out both }
+  .career-socket { transition:color .18s,box-shadow .18s,border-color .18s }
+  @keyframes career-route-trace {
+    0% { opacity:0; stroke-dashoffset:.15 } 20% { opacity:.9 }
+    100% { opacity:0; stroke-dashoffset:-1 }
+  }
+}
+@container career-schematic (max-width: 560px) {
+  .career-board { aspect-ratio:360 / 548; max-height:575px }
+  .career-wires-wide { display:none }
+  .career-wires-narrow { display:block }
+  .career-chart .career-station {
+    --socket-size:clamp(34px,11cqw,50px);
+    left:var(--mx); top:var(--my); max-width:45%;
+  }
+  .career-chart .career-station strong { font-size:clamp(.86rem,3.85cqw,1.07rem) }
+  .career-chart .career-station small { font-size:.68rem; margin-top:3px }
+  .career-socket { margin-bottom:5px }
+  .career-rail-label { top:5.8%; left:25.3%; transform:translateX(-50%); font-size:.65rem; letter-spacing:.055em; white-space:nowrap; gap:5px }
+  .career-rail-label::before { width:8px }
+  .career-rail-label.automation-rail { left:74.7% }
+}

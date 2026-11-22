@@ -3,7 +3,18 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import { createHardware } from './hardware'
 import { createDataPlate } from './data'
 import { createNetworkPlate } from './network'
-import type { PlateKind } from './plateTypes'
+import { neutralTour, tourValue, type PlateKind, type TourMix } from './plateTypes'
+
+// Look-at coordinates and lens framing in model space. Orbit input stays additive.
+type Shot = readonly [x:number, y:number, yaw:number, elevation:number, zoom:number]
+const shots: Record<PlateKind, readonly [Shot,Shot,Shot]> = {
+  hardware: [[0,.61,.58,.45,.95],[.20,.93,.32,.90,1.56],[.30,.48,-.33,1.08,1.30]],
+  paths: [[-1.10,-.07,.22,.29,1.35],[.05,-.04,-.17,.40,1.17],[1.15,-.04,.49,.13,1.42]],
+  graph: [[0,0,.53,.32,1.06],[0,.02,-.21,.19,1.18],[0,0,.28,.31,1.08]],
+  events: [[-.48,-.21,.47,.48,1.15],[.08,.05,-.18,.24,1.33],[.52,-.09,.26,.33,1.33]],
+  shift: [[-.96,-.03,-.29,.32,1.43],[0,-.02,.24,.16,1.24],[.98,.12,.38,.31,1.43]],
+  filter: [[-.75,0,.20,.23,1.30],[0,.02,-.34,.35,1.10],[.81,-.02,.36,.16,1.31]],
+}
 
 function floorGrid(height: number) {
   const material = new THREE.ShaderMaterial({
@@ -42,13 +53,16 @@ export function createPlateStage(canvas: HTMLCanvasElement, kind: PlateKind) {
   const camera = new THREE.OrthographicCamera(-4,4,2.5,-2.5,.1,40)
   const assembly = hardware ? createHardware() : kind === 'graph' || kind === 'filter' ? createNetworkPlate(kind) : createDataPlate(kind)
   scene.add(assembly.object)
-  const environment = new RoomEnvironment()
-  const prefilter = new THREE.PMREMGenerator(renderer)
-  const reflection = prefilter.fromScene(environment, .045)
-  scene.environment = reflection.texture
-  scene.environmentIntensity = .83
-  environment.dispose()
-  prefilter.dispose()
+  let reflection: THREE.WebGLRenderTarget | undefined
+  if (hardware || kind === 'graph' || kind === 'filter') {
+    const environment = new RoomEnvironment()
+    const prefilter = new THREE.PMREMGenerator(renderer)
+    reflection = prefilter.fromScene(environment, .034)
+    scene.environment = reflection.texture
+    scene.environmentIntensity = .83
+    environment.dispose()
+    prefilter.dispose()
+  }
   scene.add(new THREE.HemisphereLight(0xd6f0f7,0x493628,1.0))
   const key = new THREE.DirectionalLight(0xffebd2,2.8)
   key.position.set(-3.4,6.6,3.8)
@@ -80,7 +94,8 @@ export function createPlateStage(canvas: HTMLCanvasElement, kind: PlateKind) {
   let lastWidth = 0, lastHeight = 0, lastDpr = 0
   const targetHeight = hardware ? .25 : -.03
   const center = new THREE.Vector3(0,targetHeight,0)
-  function draw(width:number, height:number, dpr:number, time:number, progress:number, yaw:number, pitch:number) {
+  const views = shots[kind]
+  function draw(width:number, height:number, dpr:number, time:number, progress:number, yaw:number, pitch:number, tour:TourMix=neutralTour) {
     if (width <= 0 || height <= 0) return
     if (width !== lastWidth || height !== lastHeight || dpr !== lastDpr) {
       lastWidth = width
@@ -96,11 +111,20 @@ export function createPlateStage(canvas: HTMLCanvasElement, kind: PlateKind) {
       camera.bottom = -camera.top
       camera.updateProjectionMatrix()
     }
-    assembly.update(time,progress)
-    const angle = (hardware ? .63 : .23) + yaw + .14*Math.sin(time*.28) + (progress-.5)*.14
-    const elevation = THREE.MathUtils.clamp((hardware ? .55 : .22) + pitch + .034*Math.sin(time*.20), .045,1.15)
+    assembly.update(time, progress, tour)
+    const baseAngle = (hardware ? .63 : .23) + .14*Math.sin(time*.28) + (progress-.5)*.14
+    const baseElevation = (hardware ? .55 : .22) + .034*Math.sin(time*.20)
+    const blendShot = (field:number, base:number) => tourValue(tour,base,views[0][field],views[1][field],views[2][field])
+    center.set(blendShot(0,0),blendShot(1,targetHeight),0)
+    const angle = yaw + blendShot(2,baseAngle)
+    const elevation = THREE.MathUtils.clamp(pitch + blendShot(3,baseElevation),.045,1.28)
+    const zoom = blendShot(4,1)
+    if (camera.zoom !== zoom) {
+      camera.zoom = zoom
+      camera.updateProjectionMatrix()
+    }
     const horizontal = Math.cos(elevation)*9
-    camera.position.set(Math.sin(angle)*horizontal, targetHeight+Math.sin(elevation)*9, Math.cos(angle)*horizontal)
+    camera.position.set(center.x+Math.sin(angle)*horizontal,center.y+Math.sin(elevation)*9,Math.cos(angle)*horizontal)
     camera.lookAt(center)
     renderer.render(scene,camera)
   }
@@ -122,7 +146,7 @@ export function createPlateStage(canvas: HTMLCanvasElement, kind: PlateKind) {
     textures.forEach(texture=>texture.dispose())
     geometries.forEach(geometry=>geometry.dispose())
     key.shadow.dispose()
-    reflection.dispose()
+    reflection?.dispose()
     renderer.dispose()
     renderer.forceContextLoss()
   }

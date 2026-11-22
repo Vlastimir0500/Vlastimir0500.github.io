@@ -1,0 +1,50 @@
+#companion-dock { display: none }
+.voyage-figure {
+  position: fixed; top: 0; left: 0; z-index: 9; width: clamp(56px,5vw,88px); pointer-events: none;
+  transform-origin: 0 0; opacity: 0; contain: layout style; will-change: transform;
+}
+.sailor-art { display: block; width: 100%; height: auto; overflow: visible }
+.sailor-art .sailor-palm, .sailor-art .sailor-index { display: none }
+.voyage-figure:is([data-motion="wave"],[data-motion="seated-wave"]) .sailor-palm,
+.voyage-figure[data-motion="point"] .sailor-index { display: inline }
+.voyage-figure:is([data-motion="wave"],[data-motion="seated-wave"],[data-motion="point"]) [data-joint="nearWrist"] .sailor-fist { display: none }
+.voyage-toggle { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0 }
+.voyage-toggle.is-rail {
+  position: fixed; z-index: 12; right: max(6px, calc((var(--gutter) - 40px) / 2)); bottom: 17px;
+  width: 36px; height: 36px; border: 1px solid #83949666; border-radius: 50%;
+  background: #152023f0; color: #d9c8ab;
+}
+.voyage-toggle.is-rail:is(:hover,:focus-visible) { border-color: #bda17c; color: #f4d19d }
+.voyage-toggle.is-rail::after {
+  position: absolute; right: calc(100% + 7px); top: 50%; transform: translateY(-50%);
+  padding: 6px 8px; background: #172023; border: 1px solid #8e9d9e42; color: #eee5d7;
+  font: 400 .7rem/1.35 var(--mono); content: attr(data-tip); white-space: nowrap; opacity: 0; pointer-events: none;
+}
+.voyage-toggle.is-rail:is(:hover,:focus-visible)::after { opacity: 1 }
+.voyage-toggle.is-docked { position: relative; width: 38px; height: 44px; color: inherit }
+.voyage-figure.is-docked { width: 42px; z-index: 22 }
+.voyage-figure[data-tour="true"] { z-index: 15 }
+.voyage-figure.is-docked[data-flight="true"] { z-index: 22 }
+.voyage-toggle.is-docked[aria-pressed="true"] svg { opacity: 0 }
+body:has(.voyage-figure[data-tour="true"]) .voyage-toggle.is-docked svg { opacity: 1 }
+body:has(dialog[open]) :is(.voyage-toggle,.voyage-figure) { visibility: hidden }
+.sailor-thinking, .sailor-grin, .sailor-squint { display: none }
+.voyage-figure:is([data-motion="inspect"],[data-motion="look"]) .sailor-thinking,
+.voyage-figure:is([data-motion="celebrate"],[data-motion="wave"],[data-motion="seated-wave"],[data-speaking="true"]) .sailor-grin,
+.voyage-figure[data-motion="celebrate"] .sailor-squint { display: inline }
+.voyage-figure:is([data-motion="celebrate"],[data-motion="wave"],[data-motion="seated-wave"],[data-motion="look"],[data-motion="inspect"],[data-speaking="true"]) .sailor-smile,
+.voyage-figure[data-speaking="true"] .sailor-thinking,
+.voyage-figure[data-motion="celebrate"] .sailor-eyes { display: none }
+@media (max-width: 1099px), (max-height: 490px) {
+  #companion-dock { display: inline-flex; align-items: center }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .voyage-figure:is([data-motion="idle"],[data-motion="look"],[data-motion="inspect"],[data-motion="point"],[data-motion="sit"]) .sailor-breathe {
+    transform-box: fill-box; transform-origin: 50% 100%; animation: sailor-breath 3.7s ease-in-out infinite;
+  }
+  @keyframes sailor-breath { 0%,100% {transform: scale(1,1)} 50% {transform: scale(1.012,.988)} }
+  .voyage-figure[data-speaking="true"] .sailor-grin {
+    transform-box: fill-box; transform-origin: 50% 10%; animation: sailor-speech .21s ease-in-out 4 alternate;
+  }
+  @keyframes sailor-speech { from {transform:scaleY(.55)} to {transform:scaleY(1.1)} }
+}

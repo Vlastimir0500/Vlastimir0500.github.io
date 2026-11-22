@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { neutralTour, tourValue, type TourMix } from './plateTypes'
 
 const brass = 0xd99963
 const cyan = 0x79c3c5
@@ -40,18 +41,22 @@ function network() {
       if (sphere[i].distanceToSquared(sphere[j]) < .285) struts.push(positions[i], positions[j])
     }
   }
-  globe.add(nodes, wires(struts, cyan, .51))
+  const shell = wires(struts, cyan, .51)
+  nodes.material.transparent = true
+  globe.add(nodes, shell)
   const selected = indices.map(i => positions[i])
   const route: THREE.Vector3[] = []
   const dots = new THREE.InstancedMesh(new THREE.SphereGeometry(.091, 22, 12), metal(brass, .24), selected.length)
   const bands = new THREE.TorusGeometry(.134, .007, 6, 34)
   const bandMetal = metal(0xf2b37b)
+  const halos: THREE.Mesh[] = []
   selected.forEach((point, i) => {
     dots.setMatrixAt(i, matrix.makeTranslation(point.x, point.y, point.z))
     const halo = new THREE.Mesh(bands, bandMetal)
     halo.position.copy(point)
     halo.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), sphere[indices[i]])
     globe.add(halo)
+    halos.push(halo)
     route.push(point, selected[(i + 1) % selected.length])
   })
   globe.add(dots, wires(route, brass, .95))
@@ -60,8 +65,13 @@ function network() {
   )
   globe.add(moving)
   const position = new THREE.Vector3()
-  return { object, update(time: number, progress: number) {
-    globe.rotation.set(.13 + Math.sin(time * .23) * .045, time * .105 + progress * .26, -.12)
+  return { object, update(time: number, progress: number, tour:TourMix=neutralTour) {
+    globe.rotation.set(.13 + Math.sin(time * .23) * .045, time * .105 + progress * .26 + .48*tour[0]-.29*tour[1], -.12)
+    nodes.material.opacity = tourValue(tour,1,1,.55,.13)
+    shell.material.opacity = tourValue(tour,.51,.64,.30,.07)
+    const glow = .18*tour[1] + .33*tour[2]
+    dots.material.emissive.setRGB(glow,glow*.48,glow*.22)
+    halos.forEach(halo=>halo.scale.setScalar(1 + .50*tour[1] + .24*tour[2]))
     selected.forEach((point, i) => {
       const along = (time * .24 + .23 * i) % 1
       position.lerpVectors(point, selected[(i + 1) % selected.length], along)
@@ -124,16 +134,26 @@ function filter() {
     const samples = curve.getPoints(42)
     for(let k=1;k<samples.length;k++)(passed ? traces : lanePoints).push(samples[k-1],samples[k])
   }
-  object.add(wires(lanePoints,cyan,.40), wires(traces,brass,.77))
+  const incoming = wires(lanePoints,cyan,.40)
+  const outgoing = wires(traces,brass,.77)
+  object.add(incoming, outgoing)
   const packets = new THREE.InstancedMesh(new THREE.SphereGeometry(.037,12,8),new THREE.MeshBasicMaterial(),curves.length)
   curves.forEach((_,i)=>packets.setColorAt(i,new THREE.Color(i%3===0?0xffbf87:0x9ee6e3)))
   object.add(packets)
   const sample = new THREE.Vector3()
-  return {object, update(time:number, progress:number) {
-    gates.children.forEach((plate,i)=>{plate.position.x=(i-1)*(.51+.16*progress+.048*Math.sin(time*.66))})
+  return {object, update(time:number, progress:number, tour:TourMix=neutralTour) {
+    const gap = tourValue(tour,.51+.16*progress+.048*Math.sin(time*.66),.43,.99,.71)
+    gates.children.forEach((plate,i)=>{plate.position.x=(i-1)*gap})
+    incoming.material.opacity = tourValue(tour,.40,.87,.55,.16)
+    outgoing.material.opacity = tourValue(tour,.77,.47,.60,1)
+    glass.opacity = tourValue(tour,.12,.09,.24,.11)
     curves.forEach((curve,i)=>{
-      curve.getPoint((time * (i%3===0 ? .19 : .27) + i*.271) % 1, sample)
-      packets.setMatrixAt(i,matrix.makeTranslation(sample.x,sample.y,sample.z))
+      const base = (time * (i%3===0 ? .19 : .27) + i*.271) % 1
+      const along = tourValue(tour,base,.08+.21*base,.46+.12*base,i%3===0?.80+.19*base:.98)
+      curve.getPoint(along, sample)
+      const size = tourValue(tour,1,1.22,1.24,i%3===0?1.55:.22)
+      matrix.makeScale(size,size,size).setPosition(sample)
+      packets.setMatrixAt(i,matrix)
     })
     packets.instanceMatrix.needsUpdate = true
   }}

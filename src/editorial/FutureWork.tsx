@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import ArchipelagoChart, { type AtlasLayer } from './ArchipelagoChart'
+import CareerRoadmap from './career/CareerRoadmap'
 import './future-work.css'
 
 const proposals = [
@@ -58,9 +59,9 @@ export default function FutureWork() {
     setActive(next)
     tabs.current[next]?.focus()
   }
-  return <section className="future-chapter" id="future-work" aria-labelledby="future-title">
+  return <><CareerRoadmap/><section className="future-chapter" id="research-atlas" aria-labelledby="future-title">
     <div className="ed-inner">
-      <p className="chapter-mark"><span>04</span><i aria-hidden="true" />Future work</p>
+      <p className="chapter-mark"><span>05</span><i aria-hidden="true" />Future work / Proposed studies</p>
       <header className="atlas-intro">
         <h2 id="future-title">An atlas from <em>memory.</em></h2>
         <p>In <cite>One Piece</cite>, Nami sets out to draw a map of the world. I’d start with three islands and a navigator that has never seen a chart. How much of the sea could it reconstruct from its own voyages?</p>
@@ -73,7 +74,7 @@ export default function FutureWork() {
       <div className="atlas-panel" id="atlas-panel" role="tabpanel" aria-labelledby={'atlas-tab-' + proposal.layer} tabIndex={0}>
         <figure className="atlas-figure">
           <div className="atlas-chart"><ArchipelagoChart layer={proposal.layer} step={fix} /></div>
-          <figcaption>Fig. 08 <i>/</i> {proposal.legend}. Illustrative chart.</figcaption>
+          <figcaption>Fig. 009 <i>/</i> {proposal.legend}. Illustrative chart.</figcaption>
           {proposal.layer === 'survey' && <div className="survey-log">
             <label htmlFor="survey-fix">Survey fix <span>{fix + 1} / {surveyLog.length}</span></label>
             <input id="survey-fix" type="range" min="1" max={surveyLog.length} step="1" value={fix + 1}
@@ -91,5 +92,5 @@ export default function FutureWork() {
         </article>
       </div>
     </div>
-  </section>
+  </section></>
 }

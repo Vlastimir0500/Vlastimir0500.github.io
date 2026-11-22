@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { Pause, Play, Rotate3D } from 'lucide-react'
 import { plateLabels } from './plates/plateTypes'
 import type { PlateKind } from './plates/plateTypes'
@@ -8,10 +8,23 @@ export default function WorkPlate({ kind }: { kind: PlateKind }) {
   const viewport = useRef<HTMLDivElement>(null)
   const [live, setLive] = useState(false)
   const [paused, setPaused] = useState(false)
+  const [beat, setBeat] = useState(-1)
+  const activeBeat = useRef(-1)
   const pauseFlag = useRef(false)
   const refresh = useRef<(() => void) | undefined>(undefined)
   const instructionId = useId()
   const name = plateLabels[kind]
+
+  useLayoutEffect(() => {
+    function frameTour(event: Event) {
+      const cue = (event as CustomEvent<{kind: PlateKind; beat: number} | null>).detail
+      activeBeat.current = cue?.kind === kind && Number.isInteger(cue.beat) && cue.beat >= 0 && cue.beat <= 2 ? cue.beat : -1
+      setBeat(activeBeat.current)
+      refresh.current?.()
+    }
+    document.addEventListener('vlastimir:tour',frameTour)
+    return () => document.removeEventListener('vlastimir:tour',frameTour)
+  },[kind])
 
   useEffect(() => {
     const host = viewport.current
@@ -19,18 +32,26 @@ export default function WorkPlate({ kind }: { kind: PlateKind }) {
     const motion = matchMedia('(prefers-reduced-motion: reduce)')
     let stage: ReturnType<typeof createPlateStage> | undefined
     let canvas: HTMLCanvasElement | undefined
-    let visible = false, ended = false, loading = false, failed = false
+    let visible = false, ended = false, loading = false, failed = false, lost = false
     let frame = 0, last = 0, elapsed = 0, progress = .5
     let yaw = 0, pitch = 0, pointer: number | undefined, lastX = 0, lastY = 0
     let dirty = true, ready = false
+    const tour: [number, number, number] = [0,0,0]
     const size = { width: host.clientWidth, height: host.clientHeight }
 
     function render(now: number) {
       frame = 0
-      if (!stage || !visible || document.hidden || motion.matches || ended) return
+      if (!stage || lost || !visible || document.hidden || motion.matches || ended) return
       if (dirty || !last || now - last >= 1000 / 30) {
-        if (!pauseFlag.current && last) elapsed += Math.min((now - last) / 1000, .12)
-        stage.draw(size.width, size.height, Math.min(devicePixelRatio || 1, 1.6), elapsed, progress, yaw, pitch)
+        const dt = last ? Math.max(0, (now - last) / 1000) : 0
+        if (!pauseFlag.current) elapsed += Math.min(dt, .12)
+        const blend = pauseFlag.current ? 1 : 1 - Math.exp(-6.5 * Math.min(dt, .25))
+        for (let i=0; i<tour.length; i++) {
+          const target = i === activeBeat.current ? 1 : 0
+          tour[i] += (target - tour[i]) * blend
+          if (Math.abs(target - tour[i]) < .001) tour[i] = target
+        }
+        stage.draw(size.width, size.height, Math.min(devicePixelRatio || 1, 1.6), elapsed, progress, yaw, pitch, tour)
         dirty = false
         last = now
         if (!ready) { ready = true; setLive(true) }
@@ -39,7 +60,7 @@ export default function WorkPlate({ kind }: { kind: PlateKind }) {
     }
     function invalidate() {
       dirty = true
-      if (visible && stage && !document.hidden && !frame) frame = requestAnimationFrame(render)
+      if (visible && stage && !lost && !document.hidden && !frame) frame = requestAnimationFrame(render)
     }
     refresh.current = () => { last = 0; invalidate() }
 
@@ -47,15 +68,31 @@ export default function WorkPlate({ kind }: { kind: PlateKind }) {
       cancelAnimationFrame(frame)
       frame = 0
       last = 0
-      if (canvas) canvas.removeEventListener('webglcontextlost', contextLost)
+      if (canvas) {
+        canvas.removeEventListener('webglcontextlost', contextLost)
+        canvas.removeEventListener('webglcontextrestored', contextRestored)
+      }
       stage?.dispose()
       stage = undefined
       canvas?.remove()
       canvas = undefined
       ready = false
+      lost = false
       if (!ended) setLive(false)
     }
-    function contextLost() { failed = true; release() }
+    function contextLost(event: Event) {
+      event.preventDefault()
+      lost = true
+      ready = false
+      cancelAnimationFrame(frame)
+      frame = 0
+      setLive(false)
+    }
+    function contextRestored() {
+      // Rebuild the scene-owned reflection and shadow targets after a driver reset.
+      release()
+      void activate()
+    }
 
     async function activate() {
       if (ended || failed || !visible || document.hidden || motion.matches) return
@@ -70,6 +107,7 @@ export default function WorkPlate({ kind }: { kind: PlateKind }) {
         host!.appendChild(canvas)
         stage = createPlateStage(canvas,kind)
         canvas.addEventListener('webglcontextlost',contextLost)
+        canvas.addEventListener('webglcontextrestored',contextRestored)
         invalidate()
       } catch {
         failed = true
@@ -161,8 +199,9 @@ export default function WorkPlate({ kind }: { kind: PlateKind }) {
     refresh.current?.()
   }
 
-  return <div className={'work-plate' + (live ? ' is-live' : '')} data-plate={kind}>
-    <img className="plate-still" src={'./plates/' + kind + '.webp'} alt={name + ', illustrative 3D model'} loading="lazy" draggable={false} />
+  const poster = !live && beat >= 0 ? 'tour/' + kind + '-' + beat : kind
+  return <div className={'work-plate' + (live ? ' is-live' : '')} data-plate={kind} data-tour-beat={beat >= 0 ? beat : undefined}>
+    <img className="plate-still" src={'./plates/' + poster + '.webp'} alt={name + ', illustrative 3D model'} loading="lazy" draggable={false} />
     <div className="plate-viewport" ref={viewport} role="group" tabIndex={live ? 0 : undefined}
       aria-label={name} aria-describedby={live ? instructionId : undefined} />
     {live && <>
